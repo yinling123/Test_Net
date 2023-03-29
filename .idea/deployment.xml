@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false" showNewOnSourceInSync="false">
+    <serverData>
+      <paths name="root@hz-t2.matpool.com:26637">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="root@hz.matpool.com:29607">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/mnt/Test_Net" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
