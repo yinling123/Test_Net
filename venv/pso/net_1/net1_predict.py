@@ -12,7 +12,6 @@ import cv2
 import os
 import warnings
 
-from torch.autograd._functions import tensor
 from torchvision.transforms import transforms
 
 from venv.pso.net_2.net2_predict import transform
@@ -59,36 +58,36 @@ class resnet50:
     """
     def __init__(self):
         self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
-        self.model.eval()
+        if torch.cuda.is_available():
+            self.model.cuda().eval()
+        else:
+            self.model.eval()
 
-    def predict(self, img, file_name = None, threshold=0.4, flag=False, rect_th=3, text_size=1, text_th=3):
+    def predict(self, img, file_name = None, threshold=0.2, flag=False, rect_th=3, text_size=1, text_th=3):
         # img = Image.open(img_path)
         # 转换一个PIL库的图片或者numpy的数组为tensor张量类型；转换从[0,255]->[0,1]
 
-        print(np.max(img))
-
         transform = T.Compose([T.ToTensor()])
         img = transform(img)
-
+        img = img.cuda()
         img = torch.tensor(img, dtype=torch.float32)
-
-        print(img.dtype)
 
         pred = self.model([img])
         # print(pred)
         # print(pred[0]['labels'].numpy())
 
         # 类别提取
-        pred_class = [COCO_INSTANCE_CATEGORY_NAMES[i] for i in list(pred[0]['labels'].numpy())]
+        pred_class = [COCO_INSTANCE_CATEGORY_NAMES[i] for i in list(pred[0]['labels'].cpu().numpy())]
         # 坐标提取
-        pred_boxes = [[(i[0], i[1]), (i[2], i[3])] for i in list(pred[0]['boxes'].detach().numpy())]
+        pred_boxes = [[(i[0], i[1]), (i[2], i[3])] for i in list(pred[0]['boxes'].detach().cpu().numpy())]
 
         # 找出符合相似度要求的
-        pred_score = list(pred[0]['scores'].detach().numpy())
+        pred_score = list(pred[0]['scores'].detach().cpu().numpy())
         # print(pred_score[0])
+
+        print(pred_score)
         pred_t = [pred_score.index(x) for x in pred_score if x > threshold][-1]
-        print(type(pred_t))
-        # print(pred_t)
+
         pred_boxes = pred_boxes[:pred_t + 1]
         pred_class = pred_class[:pred_t + 1]
         # print("pred_class:", pred_class)
@@ -107,7 +106,7 @@ class resnet50:
         return str(pred_cls[0]), max(pred_score)
 
 if __name__ == '__main__':
-    img = Image.open(r"dog.jpg")
+    img = Image.open(r"10.jpg")
     local_net = resnet50()
     matrix = np.asarray(img).copy()
     print(local_net.predict(matrix, flag=True))

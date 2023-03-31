@@ -3,3 +3,5 @@ lib/*
 scripts/*
 venv/pso/net_3/*
 venv/pso/net_4/*
+venv/pso/img/*
+venv/pso/img_out/*

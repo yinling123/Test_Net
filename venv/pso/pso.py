@@ -6,7 +6,6 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-
 # 构建粒子群算法类
 class Pso:
     """
@@ -89,14 +88,15 @@ class Pso:
         """
         # 计算矩阵的形状及其维度
         # shape = self.V.shape
-        shape = (400, 400, 3)
+        shape = (32, 32, 3)
         # 生成对应维度的随机数
         r1 = np.random.random(shape)
         r2 = np.random.random(shape)
         # 进行速度更新
         # print(self.p_best)
+
         self.V[k] = self.w * self.V[k] + self.c1 * r1 * (self.p_best[k] - self.X[k]) + self.c2 * r2 * (
-                    self.g_position[k] - self.X[k])
+                    self.g_position - self.X[k])
         # 修改不符合条件的值
         self.V[k][self.V[k] < -3] = -3
         self.V[k][self.V[k] > 3] = 3
@@ -146,7 +146,7 @@ class Pso:
         """
         # 进行循环迭代处理求解符合条件的值
         self.a = self.prob / self.l2
-        for i in range(100):
+        for i in range(1000):
             # 当满足条件时退出循环
             if self.a < self.prob / self.l2 < self.a / self.y:
                 break
@@ -162,11 +162,11 @@ class Pso:
         """
         # 进行求解之前先将前面的函数进行调用
         self.similarity(self.X[k])
-        prob_now = self.prob_abs(s) - self.a * self.l2
+        prob_now = abs(self.prob_abs(s) - self.a * self.l2)
         # print(s)
         # 进行比较判断
         # print(self.g_fitness)
-        if self.g_fitness > prob_now:
+        if self.g_fitness < prob_now:
             self.g_position = self.X[k]
             self.g_fitness = prob_now
         # print('种群最优位置为:',self.g_position)
@@ -217,12 +217,12 @@ class Pso:
         # 进行循环迭代求最优
         # 直到当前存储的值数目大于0
         times = 0
-        # 限制最多攻击200次
-        while len(self.success) == 0 and times < 100:
+        # 限制最多攻击50次
+        while len(self.success) == 0 and times < 50:
             # 先进行初始化操作
             self.pos_init()
             # 进行惯性权重的线性降低
-            self.w = (100 - times) * 0.6 / 100 + 0.4
+            self.w = (50 - times) * 0.6 / 50 + 0.4
             # 然后迭代求最优解
             for i in range(self.k):
                 # 先更新速度，再更新位置
@@ -231,10 +231,8 @@ class Pso:
                 # 更新最优解
                 self.fitness_func(self.local_net.predict(self.X[i], file_name=self.file_name), i)
 
-            # print(66666)
             # 使用适应度函数最好的进行黑盒攻击
             s = self.box_net.predict(self.g_position, self.file_name)
-            print(s)
             if self.distinguish(s):
                 # 如果攻击成功，则将数目加1
                 self.success.append(s)
@@ -242,13 +240,15 @@ class Pso:
                 self.identity = True
                 # 进行攻击成功的图片显示
                 self.box_net.predict(self.g_position, file_name=self.file_name, flag=True)
-                print(times + 1)
             else:
                 # 清空初始最优位置
                 self.p_best.clear()
+                self.g_best.clear()
+                self.g_position = None
+                self.g_fitness = 0
                 # 进行随机排序
                 random.shuffle(self.X)
 
             times += 1
         # 返回攻击情况
-        return times, self.identity
+        return [times, self.identity]

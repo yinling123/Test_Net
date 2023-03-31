@@ -2,13 +2,15 @@ from pso import Pso
 from image_process import convert_jpg
 from net_1.net1_predict import resnet50
 from net_2.net2_predict import alexnet
-from net_4.net4_predict import faster_cnn
 from image_process import image_to_matrix
 from pylab import *
+import os
+import warnings
 
 matplotlib.rcParams['axes.unicode_minus'] = False
 mpl.rcParams['font.sans-serif'] = ['SimHei']
 
+warnings.filterwarnings("ignore")
 class attack:
     """
     进行攻击的类
@@ -36,7 +38,7 @@ class attack:
         p = Pso(2, 2, 2, 20, img, 0.2, s, 2, 10, box_kind=box_kind[0], local_net=local, box_net=box, file_name=file_name, b=30)
         return p.pso()
 
-    def circular_attack(self, url, local, box):
+    def circular_attack(self, name, url, local, box):
         """
         进行文件夹下循环遍历攻击(直接找数据集)
         :return:
@@ -50,70 +52,83 @@ class attack:
             for file_name in os.listdir(pth):
                 # 遍历文件夹获取文件路径
                 img_pth = ('/'.join([url, file_name]))
-                print(img_pth)
                 # 获取结果
-                res = self.network_attack(local, box, img_pth, file_name=file_name)
-                # 如果攻击成功,成功次数+1
-                if res[1]:
-                    success_time += 1
-                # 记录总的访问次数
-                img_num += 1
-                visit_times += visit_times
-        except Exception:
-            print()
-            with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
-                f.write('出错的图片名称' + file_name + '\n')
+                try:
+                    res = self.network_attack(local, box, img_pth, file_name=file_name)
+                    if res[1]:
+                        success_time += 1
+                        # 记录总的访问次数
+                    img_num += 1
+                    visit_times += res[0]
+                except Exception as e:
+                    print(e)
+                    with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
+                        f.write(name + '出错的图片名称' + file_name + '\n')
+        except Exception as e:
+            print(e)
         finally:
             # 统计总的成功率和平均访问次数
-            return round(success_time / img_num, 2), round(visit_times / img_num)
+            return round(success_time / img_num, 2), round(visit_times / img_num, 2)
 
     def run(self, url):
         """
         进行网络之间的互相攻击
-        :param 传入图片路径
+        :param 传入文件夹对应路径
         :return: 生成对应的图像
         """
         # 生成对应的网络
         res_net = resnet50()
         alex_net = alexnet()
-        faster_net = faster_cnn()
 
         # 生成相应的计数
-        res_net_to_alex_net_success = 0 # resnet50去攻击alex
-        res_net_to_alex_net_visit = 0  # resnet50去攻击alex
-        res_net_to_faster_cnn_success = 0 # resnet50去攻击faster
-        res_net_to_faster_cnn_visit = 0  # resnet50去攻击faster
+        res_net_to_alex_net_success = 0 # resnet50去攻击alex成功次数
+        res_net_to_alex_net_visit = 0  # resnet50去攻击alex访问次数
+        res_net_to_res_net_success = 0 # resnet50去攻击res成功次数
+        res_net_to_res_net_visit = 0  # resnet50去攻击res访问次数
+        alex_net_to_alex_net_success = 0 # alex去攻击alex成功次数
+        alex_net_to_alex_net_visit = 0 # alex攻击alex的访问次数
 
-        res_net_to_alex_net_success, res_net_to_alex_net_visit = self.circular_attack(url, res_net, alex_net)
+
+        name = "res_to_alex"
+        res_net_to_alex_net_success, res_net_to_alex_net_visit = self.circular_attack(name, url, res_net, alex_net)
 
         with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
             f.write('平均res_net_to_alex_net_success' + str(res_net_to_alex_net_success) + '\n')
             f.write('平均res_net_to_alex_net_visit' + str(res_net_to_alex_net_visit) + '\n')
 
-        res_net_to_faster_cnn_success, res_net_to_faster_cnn_visit = self.circular_attack(url, res_net, faster_net)
-
-        with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
-            f.write('平均res_net_to_faster_cnn_success' + str( res_net_to_faster_cnn_success) + '\n')
-            f.write('平均res_net_to_faster_cnn_visit' + str(res_net_to_faster_cnn_visit) + '\n')
-
-        # 进行图像绘画
-        scale_ls = range(2)
-        index_ls = [' res_net_to_alex_net', 'res_net_to_faster_cnn']
-        val_ls = [res_net_to_alex_net_success, res_net_to_faster_cnn_success]
-        plt.bar(scale_ls, val_ls) # 进行绘图
-        plt.xticks(scale_ls, index_ls) # 设置坐标字
-        plt.xlabel('网络关系')
-        plt.ylabel('成功率')
-        plt.title('网络攻击成功率对比')
-        plt.savefig('img_out/success1.jpg')
-
-        val_ls = [res_net_to_alex_net_visit, res_net_to_faster_cnn_visit]
-        plt.bar(scale_ls, val_ls)  # 进行绘图
-        plt.xticks(scale_ls, index_ls)  # 设置坐标字
-        plt.xlabel('网络关系')
-        plt.ylabel('平均访问次数')
-        plt.title('平均访问次数对比')
-        plt.savefig('img_out/visit1.jpg')
+        # name = "res_res"
+        # res_net_to_res_net_success, res_net_to_res_net_visit = self.circular_attack(name, url, res_net, res_net)
+        #
+        # with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
+        #     f.write('平均res_net_to_res_net_success' + str(res_net_to_res_net_success) + '\n')
+        #     f.write('平均res_net_to_res_net_visit' + str(res_net_to_res_net_visit) + '\n')
+        #
+        # name = "alex_alex"
+        # alex_net_to_alex_net_success, alex_net_to_alex_net_visit = self.circular_attack(name, url, alex_net, alex_net)
+        #
+        # with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
+        #     f.write('平均alex_net_to_alex_net_success' + str(alex_net_to_alex_net_success) + '\n')
+        #     f.write('平均alex_net_to_alex_net_visit' + str(alex_net_to_alex_net_visit) + '\n')
+        #
+        #
+        # # 进行图像绘画
+        # scale_ls = range(2)
+        # index_ls = [' res_net_to_alex_net', 'res_net_to_res, alex_net_to_alex_net']
+        # val_ls = [res_net_to_alex_net_success, res_net_to_res_net_success, alex_net_to_alex_net_success]
+        # plt.bar(scale_ls, val_ls) # 进行绘图
+        # plt.xticks(scale_ls, index_ls) # 设置坐标字
+        # plt.xlabel('网络关系')
+        # plt.ylabel('成功率')
+        # plt.title('网络攻击成功率对比')
+        # plt.savefig('img_out/success1.jpg')
+        #
+        # val_ls = [res_net_to_alex_net_visit, res_net_to_res_net_visit, alex_net_to_alex_net_visit]
+        # plt.bar(scale_ls, val_ls)  # 进行绘图
+        # plt.xticks(scale_ls, index_ls)  # 设置坐标字
+        # plt.xlabel('网络关系')
+        # plt.ylabel('平均访问次数')
+        # plt.title('平均访问次数对比')
+        # plt.savefig('img_out/visit1.jpg')
 
 
 

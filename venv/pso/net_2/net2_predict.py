@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy
+import pylab as pl
 from torchvision import models
 import torch
 import warnings
@@ -43,7 +44,7 @@ for i in classes:
 
 # print(111)
 
-def convertjpg(jpgfile, width=400, height=400):
+def convertjpg(jpgfile, width=32, height=32):
     """
     将图片格式进行转化
     :param jpgfile:
@@ -68,20 +69,21 @@ class alexnet:
     """
     def __init__(self):
         self.model = models.alexnet(pretrained=True)
-        self.model.eval()
+        if torch.cuda.is_available():
+            self.model.cuda().eval()
+        else:
+            self.model.eval()
 
 
     def predict(self, img, file_name, flag = False):
         # 进行图像转换和预处理
         print(type(img))
         img = Image.fromarray(img)
-        img_t = transform(img)
+        img_t = transform(img).cuda()
         batch_t = torch.unsqueeze(img_t,0)
 
         # 进行模型推理
         out = self.model(batch_t)
-
-        print(list(out[0]))
 
         _, index = torch.max(out, 1)
         percentage = torch.nn.functional.softmax(out, dim=1)[0]
@@ -96,12 +98,16 @@ class alexnet:
 if __name__ == '__main__':
     box_net = alexnet()
     pth = r'D:\Note\Test_Net\venv\pso\img'
-    for file_name in os.listdir(pth):
-        # print(file_name)
-        # 遍历文件夹获取文件路径
-        img_pth = ('/'.join([pth, file_name]))
-        img = convertjpg(img_pth)
-        # img = Image.open(r'mm.jpeg')
-        img = numpy.asarray(img).copy()
-        box_net.predict(img,file_name=file_name,flag=True)
+    img_pth = r'dog.jpg'
+    img = convertjpg(img_pth)
+    img = numpy.asarray(img).copy()
+    box_net.predict(img, file_name=img_pth, flag=True)
+    # for file_name in os.listdir(pth):
+    #     # print(file_name)
+    #     # 遍历文件夹获取文件路径
+    #     img_pth = ('/'.join([pth, file_name]))
+    #     img = convertjpg(img_pth)
+    #     # img = Image.open(r'mm.jpeg')
+    #     img = numpy.asarray(img).copy()
+    #     box_net.predict(img,file_name=file_name,flag=True)
 
