@@ -29,7 +29,7 @@ transform = transforms.Compose([
 # alexnet.eval()
 
 # 读取类的标签
-with open(r'D:\Python\Test_Net\venv\pso\net_2\imagenet_classes.txt') as f:
+with open(r'/mnt/Test_Net/venv/pso/net_2/imagenet_classes.txt') as f:
   classes = [line.strip()  for line in f.readlines()]
 
 classes_final = []
@@ -44,7 +44,7 @@ for i in classes:
 
 # print(111)
 
-def convertjpg(jpgfile, width=32, height=32):
+def convertjpg(jpgfile, width=400, height=400):
     """
     将图片格式进行转化
     :param jpgfile:
@@ -75,12 +75,13 @@ class alexnet:
             self.model.eval()
 
 
-    def predict(self, img, file_name, flag = False):
+    def predict(self, img, file_name = " ", flag = False):
         # 进行图像转换和预处理
-        print(type(img))
-        img = Image.fromarray(img)
+        # print(type(img))
+        img = Image.fromarray(numpy.uint8(img))
+        # print(img)
         img_t = transform(img).cuda()
-        batch_t = torch.unsqueeze(img_t,0)
+        batch_t = torch.unsqueeze(img_t, 0)
 
         # 进行模型推理
         out = self.model(batch_t)
@@ -91,7 +92,7 @@ class alexnet:
         if flag:
             plt.imshow(img)
             plt.title(classes[index[0]] + ':' + str(round(percentage[index[0]].item(), 2)))
-            plt.savefig(r'D:/Note/Test_Net/venv/pso/img_out/' + 'successAlex' + file_name);
+            plt.savefig(r'/mnt/test/venv/pso/img_out/' + 'successAlex' + file_name);
         return classes[index[0]], percentage[index[0]].item()
 
 

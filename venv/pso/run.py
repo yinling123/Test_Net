@@ -55,11 +55,11 @@ class attack:
                 # 获取结果
                 try:
                     res = self.network_attack(local, box, img_pth, file_name=file_name)
+                    img_num += 1
+                    visit_times += res[0]
                     if res[1]:
                         success_time += 1
                         # 记录总的访问次数
-                    img_num += 1
-                    visit_times += res[0]
                 except Exception as e:
                     print(e)
                     with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
@@ -68,6 +68,9 @@ class attack:
             print(e)
         finally:
             # 统计总的成功率和平均访问次数
+            print("攻击成功次数", success_time)
+            print("检测次数", visit_times)
+            print("检测的图片总数", img_num)
             return round(success_time / img_num, 2), round(visit_times / img_num, 2)
 
     def run(self, url):
@@ -88,47 +91,48 @@ class attack:
         alex_net_to_alex_net_success = 0 # alex去攻击alex成功次数
         alex_net_to_alex_net_visit = 0 # alex攻击alex的访问次数
 
+        # 目前已经测试完成
+        # name = "res_to_alex"
+        # res_net_to_alex_net_success, res_net_to_alex_net_visit = self.circular_attack(name, url, res_net, alex_net)
+        #
+        # with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
+        #     f.write('平均res_net_to_alex_net_success' + str(res_net_to_alex_net_success) + '\n')
+        #     f.write('平均res_net_to_alex_net_visit' + str(res_net_to_alex_net_visit) + '\n')
 
-        name = "res_to_alex"
-        res_net_to_alex_net_success, res_net_to_alex_net_visit = self.circular_attack(name, url, res_net, alex_net)
+        # 等待测试
+        name = "res_res"
+        res_net_to_res_net_success, res_net_to_res_net_visit = self.circular_attack(name, url, res_net, res_net)
 
         with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
-            f.write('平均res_net_to_alex_net_success' + str(res_net_to_alex_net_success) + '\n')
-            f.write('平均res_net_to_alex_net_visit' + str(res_net_to_alex_net_visit) + '\n')
+            f.write('平均res_net_to_res_net_success' + str(res_net_to_res_net_success) + '\n')
+            f.write('平均res_net_to_res_net_visit' + str(res_net_to_res_net_visit) + '\n')
 
-        # name = "res_res"
-        # res_net_to_res_net_success, res_net_to_res_net_visit = self.circular_attack(name, url, res_net, res_net)
-        #
-        # with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
-        #     f.write('平均res_net_to_res_net_success' + str(res_net_to_res_net_success) + '\n')
-        #     f.write('平均res_net_to_res_net_visit' + str(res_net_to_res_net_visit) + '\n')
-        #
-        # name = "alex_alex"
-        # alex_net_to_alex_net_success, alex_net_to_alex_net_visit = self.circular_attack(name, url, alex_net, alex_net)
-        #
-        # with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
-        #     f.write('平均alex_net_to_alex_net_success' + str(alex_net_to_alex_net_success) + '\n')
-        #     f.write('平均alex_net_to_alex_net_visit' + str(alex_net_to_alex_net_visit) + '\n')
-        #
-        #
-        # # 进行图像绘画
-        # scale_ls = range(2)
-        # index_ls = [' res_net_to_alex_net', 'res_net_to_res, alex_net_to_alex_net']
-        # val_ls = [res_net_to_alex_net_success, res_net_to_res_net_success, alex_net_to_alex_net_success]
-        # plt.bar(scale_ls, val_ls) # 进行绘图
-        # plt.xticks(scale_ls, index_ls) # 设置坐标字
-        # plt.xlabel('网络关系')
-        # plt.ylabel('成功率')
-        # plt.title('网络攻击成功率对比')
-        # plt.savefig('img_out/success1.jpg')
-        #
-        # val_ls = [res_net_to_alex_net_visit, res_net_to_res_net_visit, alex_net_to_alex_net_visit]
-        # plt.bar(scale_ls, val_ls)  # 进行绘图
-        # plt.xticks(scale_ls, index_ls)  # 设置坐标字
-        # plt.xlabel('网络关系')
-        # plt.ylabel('平均访问次数')
-        # plt.title('平均访问次数对比')
-        # plt.savefig('img_out/visit1.jpg')
+        name = "alex_alex"
+        alex_net_to_alex_net_success, alex_net_to_alex_net_visit = self.circular_attack(name, url, alex_net, alex_net)
+
+        with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
+            f.write('平均alex_net_to_alex_net_success' + str(alex_net_to_alex_net_success) + '\n')
+            f.write('平均alex_net_to_alex_net_visit' + str(alex_net_to_alex_net_visit) + '\n')
+
+
+        # 进行图像绘画
+        scale_ls = range(3)
+        index_ls = [' res_net_to_alex_net', 'res_net_to_res, alex_net_to_alex_net']
+        val_ls = [0.89, res_net_to_res_net_success, alex_net_to_alex_net_success]
+        plt.bar(scale_ls, val_ls) # 进行绘图
+        plt.xticks(scale_ls, index_ls) # 设置坐标字
+        plt.xlabel('网络关系')
+        plt.ylabel('成功率')
+        plt.title('网络攻击成功率对比')
+        plt.savefig('img_data/success1.jpg')
+
+        val_ls = [17.41, res_net_to_res_net_visit, alex_net_to_alex_net_visit]
+        plt.bar(scale_ls, val_ls)  # 进行绘图
+        plt.xticks(scale_ls, index_ls)  # 设置坐标字
+        plt.xlabel('网络关系')
+        plt.ylabel('平均访问次数')
+        plt.title('平均访问次数对比')
+        plt.savefig('img_data/visit1.jpg')
 
 
 
@@ -137,4 +141,4 @@ if __name__ == '__main__':
     # img目录存放数据集
     # img_out存储攻击成功的数据
     attack = attack()
-    attack.run(r'img')
+    attack.run(r'dog_img')

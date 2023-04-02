@@ -3,6 +3,7 @@ import random
 import image_process as Ip
 import numpy as np
 import warnings
+from image_process import image_to_matrix
 
 warnings.filterwarnings("ignore")
 
@@ -88,7 +89,7 @@ class Pso:
         """
         # 计算矩阵的形状及其维度
         # shape = self.V.shape
-        shape = (32, 32, 3)
+        shape = (400, 400, 3)
         # 生成对应维度的随机数
         r1 = np.random.random(shape)
         r2 = np.random.random(shape)
@@ -210,13 +211,15 @@ class Pso:
         # 进行粒子和速度的初始化
         self.noise_gaussian()
         self.v_init()
-        temp = self.local_net.predict(self.A, file_name=self.file_name)
+        print(type(self.A))
+        data = image_to_matrix(self.A)
+        temp = self.local_net.predict(data, file_name=self.file_name)
         self.kind = temp[0]
         self.prob = temp[1]
 
         # 进行循环迭代求最优
         # 直到当前存储的值数目大于0
-        times = 0
+        times = 1
         # 限制最多攻击50次
         while len(self.success) == 0 and times < 50:
             # 先进行初始化操作
@@ -234,7 +237,7 @@ class Pso:
             # 使用适应度函数最好的进行黑盒攻击
             s = self.box_net.predict(self.g_position, self.file_name)
             if self.distinguish(s):
-                # 如果攻击成功，则将数目加1
+                # 如果攻击成功，则将对应参数转化
                 self.success.append(s)
                 self.success.append(times)
                 self.identity = True
@@ -251,4 +254,4 @@ class Pso:
 
             times += 1
         # 返回攻击情况
-        return [times, self.identity]
+        return times, self.identity

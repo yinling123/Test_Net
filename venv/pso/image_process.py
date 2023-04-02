@@ -6,7 +6,7 @@ import PIL.Image as Image
 import numpy as np
 import warnings
 
-from venv.pso.net_2.net2_predict import convertjpg
+from net_2.net2_predict import convertjpg
 
 warnings.filterwarnings("ignore")
 
@@ -37,7 +37,7 @@ def matrix_to_image(matrix):
     return new_image
 
 
-def convert_jpg(jpg_file, width=32, height=32):
+def convert_jpg(jpg_file, width=400, height=400):
     """
     将图片格式进行转化
     :param jpg_file:
@@ -63,7 +63,7 @@ def interrupt_position(matrix):
     :return: 返回最后的正态分布随机数
     """
     # 求出对应矩阵的维度
-    shape = (32, 32, 3)
+    shape = (400, 400, 3)
     # 产生随机扰动数
     noise = np.random.normal(0, np.random.rand() * 10, shape)
     # 改变对应维度上的值
@@ -82,7 +82,7 @@ def interrupt_velocity(matrix):
     :return:
     """
     # 产生随机速度，在-3-3之间
-    v = np.random.randint(-3, 4, size=(32, 32, 3))
+    v = np.random.randint(-3, 4, size=(400, 400, 3))
     return v
 
 

@@ -8,13 +8,14 @@ import torchvision
 # pip install torchvision
 import numpy as np
 import cv2
+import time
 
 import os
 import warnings
 
 from torchvision.transforms import transforms
 
-from venv.pso.net_2.net2_predict import transform
+from net_2.net2_predict import transform
 
 warnings.filterwarnings("ignore")
 
@@ -85,7 +86,6 @@ class resnet50:
         pred_score = list(pred[0]['scores'].detach().cpu().numpy())
         # print(pred_score[0])
 
-        print(pred_score)
         pred_t = [pred_score.index(x) for x in pred_score if x > threshold][-1]
 
         pred_boxes = pred_boxes[:pred_t + 1]
@@ -102,7 +102,8 @@ class resnet50:
         image = img.squeeze(0).permute(1, 2, 0).mul(255).clamp(0, 255).cpu().numpy().astype("uint8")
         plt.imshow(image)
         plt.title(pred_cls[0] + ':' + str(round(max(pred_score), 2)))
-        plt.show()
+        plt.savefig(r'/mnt/test/venv/pso/img_out/' + 'successRes' + time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + '.jpg')
+        # plt.show()
         return str(pred_cls[0]), max(pred_score)
 
 if __name__ == '__main__':
