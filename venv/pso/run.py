@@ -62,7 +62,7 @@ class attack:
                         # 记录总的访问次数
                 except Exception as e:
                     print(e)
-                    with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
+                    with open('record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
                         f.write(name + '出错的图片名称' + file_name + '\n')
         except Exception as e:
             print(e)
@@ -95,7 +95,7 @@ class attack:
         # name = "res_to_alex"
         # res_net_to_alex_net_success, res_net_to_alex_net_visit = self.circular_attack(name, url, res_net, alex_net)
         #
-        # with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
+        # with open('record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
         #     f.write('平均res_net_to_alex_net_success' + str(res_net_to_alex_net_success) + '\n')
         #     f.write('平均res_net_to_alex_net_visit' + str(res_net_to_alex_net_visit) + '\n')
 
@@ -103,14 +103,14 @@ class attack:
         name = "res_res"
         res_net_to_res_net_success, res_net_to_res_net_visit = self.circular_attack(name, url, res_net, res_net)
 
-        with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
+        with open('record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
             f.write('平均res_net_to_res_net_success' + str(res_net_to_res_net_success) + '\n')
             f.write('平均res_net_to_res_net_visit' + str(res_net_to_res_net_visit) + '\n')
 
         name = "alex_alex"
         alex_net_to_alex_net_success, alex_net_to_alex_net_visit = self.circular_attack(name, url, alex_net, alex_net)
 
-        with open('../record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
+        with open('record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
             f.write('平均alex_net_to_alex_net_success' + str(alex_net_to_alex_net_success) + '\n')
             f.write('平均alex_net_to_alex_net_visit' + str(alex_net_to_alex_net_visit) + '\n')
 

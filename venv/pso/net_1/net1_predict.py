@@ -9,13 +9,13 @@ import torchvision
 import numpy as np
 import cv2
 import time
-
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 import os
 import warnings
 
 from torchvision.transforms import transforms
 
-from net_2.net2_predict import transform
+# from net_2.net2_predict import transform
 
 warnings.filterwarnings("ignore")
 
@@ -64,10 +64,21 @@ class resnet50:
         else:
             self.model.eval()
 
-    def predict(self, img, file_name = None, threshold=0.2, flag=False, rect_th=3, text_size=1, text_th=3):
-        # img = Image.open(img_path)
+    def predict(self, img, file_name=None, threshold=0.2, flag=False, prob=None, rect_th=3, text_size=1, text_th=3):
+        """
+        进行网络识别预测
+        :param img:
+        :param file_name:
+        :param threshold:
+        :param flag:
+        :param rect_th:
+        :param text_size:
+        :param text_th:
+        :return:
+        """
         # 转换一个PIL库的图片或者numpy的数组为tensor张量类型；转换从[0,255]->[0,1]
-
+        if flag:
+            return self.object_detection_api(img, prob)
         transform = T.Compose([T.ToTensor()])
         img = transform(img)
         img = img.cuda()
@@ -94,22 +105,31 @@ class resnet50:
         # print("pred_boxes:", pred_boxes)
         if flag == False:
             return str(pred_class[0]), max(pred_score)
-        else:
-           return self.object_detection_api(img, pred_class, pred_boxes, pred_score)
 
-    def object_detection_api(self, img, pred_class, pred_boxes, pred_score, threshold=0.5, rect_th=3, text_size=1, text_th=3):
-        boxes, pred_cls, pred_score = pred_boxes, pred_class, pred_score
+    def object_detection_api(self, img, prob, threshold=0.5, rect_th=3, text_size=1, text_th=3):
+        """
+        进行照片的绘制
+        :param img:
+        :param pred_class:
+        :param pred_boxes:
+        :param pred_score:
+        :param threshold:
+        :param rect_th:
+        :param text_size:
+        :param text_th:
+        :return:
+        """
         image = img.squeeze(0).permute(1, 2, 0).mul(255).clamp(0, 255).cpu().numpy().astype("uint8")
         plt.imshow(image)
-        plt.title(pred_cls[0] + ':' + str(round(max(pred_score), 2)))
-        plt.savefig(r'/mnt/test/venv/pso/img_out/' + 'successRes' + time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + '.jpg')
+        plt.title(prob[0] + ':' + str(round(prob[1], 2)))
+        plt.savefig(r'/mnt/test/venv/pso/img_out/' + 'successRes' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + '.jpg')
         # plt.show()
-        return str(pred_cls[0]), max(pred_score)
+        return prob
+
 
 if __name__ == '__main__':
-    img = Image.open(r"10.jpg")
+    # img = Image.open(r"mm.jpeg")
     local_net = resnet50()
-    matrix = np.asarray(img).copy()
-    print(local_net.predict(matrix, flag=True))
+    # matrix = np.asarray(img).copy()
+    # print(local_net.predict(matrix, flag=False))
     # print(local_net.e)
-

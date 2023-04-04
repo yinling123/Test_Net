@@ -74,11 +74,22 @@ class alexnet:
         else:
             self.model.eval()
 
-
-    def predict(self, img, file_name = " ", flag = False):
+    def predict(self, img, file_name=" ", flag=False, prob=None):
+        """
+        进行图片检测
+        :param img:
+        :param file_name:
+        :param flag:
+        :param prob:
+        :return:
+        """
+        if flag:
+            plt.imshow(img)
+            plt.title(prob[0] + ':' + str(round(prob[1], 2)))
+            plt.savefig(r'/mnt/test/venv/pso/img_out/' + 'successAlex' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + '.jpg')
+            return prob
         # 进行图像转换和预处理
-        # print(type(img))
-        img = Image.fromarray(numpy.uint8(img))
+        img = Image.fromarray(np.uint8(img))
         # print(img)
         img_t = transform(img).cuda()
         batch_t = torch.unsqueeze(img_t, 0)
@@ -89,10 +100,6 @@ class alexnet:
         _, index = torch.max(out, 1)
         percentage = torch.nn.functional.softmax(out, dim=1)[0]
 
-        if flag:
-            plt.imshow(img)
-            plt.title(classes[index[0]] + ':' + str(round(percentage[index[0]].item(), 2)))
-            plt.savefig(r'/mnt/test/venv/pso/img_out/' + 'successAlex' + file_name);
         return classes[index[0]], percentage[index[0]].item()
 
 

@@ -6,3 +6,6 @@ venv/pso/net_4/*
 venv/pso/img/*
 venv/pso/img_out/*
 venv/pso/dog_img/*
+venv/direct_disturbances/dog_img/*
+venv/direct_disturbances/img/*
+venv/direct_disturbances/img_out/*

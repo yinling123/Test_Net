@@ -199,7 +199,7 @@ class Pso:
         :return:
         """
         # 当黑盒网络判别结果和初次判别结果不同时，视为成功
-        if self.kind in s[0] or s[0] == self.box_kind:
+        if s[0] == self.box_kind:
             return False
         return True
 
@@ -241,16 +241,18 @@ class Pso:
                 self.success.append(s)
                 self.success.append(times)
                 self.identity = True
-                # 进行攻击成功的图片显示
-                self.box_net.predict(self.g_position, file_name=self.file_name, flag=True)
+                # 进行攻击成功的图片显示, 由于仅为画图，所以不记录进行次数，此部分代码可以进一步优化
+                self.box_net.predict(self.g_position, file_name=self.file_name, flag=True, prob=s)
             else:
                 # 清空初始最优位置
                 self.p_best.clear()
                 self.g_best.clear()
                 self.g_position = None
                 self.g_fitness = 0
-                # 进行随机排序
-                random.shuffle(self.X)
+                # 将速度和位置进行绑定排序
+                t = list(zip(self.X, self.V))
+                random.shuffle(t)
+                self.X[:], self.V[:] = zip(*t)
 
             times += 1
         # 返回攻击情况
