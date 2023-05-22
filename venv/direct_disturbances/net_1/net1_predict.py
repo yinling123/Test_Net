@@ -9,6 +9,8 @@ import time
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 import os
 import warnings
+import torch.nn.functional as F
+from torch.autograd import Variable
 
 from torchvision.transforms import transforms
 
@@ -61,7 +63,7 @@ class resnet50:
         else:
             self.model.eval()
 
-    def predict(self, img, file_name = None, threshold=0.2, flag=False, prob = None, rect_th=3, text_size=1, text_th=3):
+    def predict(self, img, file_name=None, threshold=0.2, flag=False, prob=None, cam=False, rect_th=3, text_size=1, text_th=3):
         """
         进行网络识别预测
         :param img:
@@ -100,6 +102,8 @@ class resnet50:
         pred_class = pred_class[:pred_t + 1]
         # print("pred_class:", pred_class)
         # print("pred_boxes:", pred_boxes)
+        if cam:
+            return str(pred_class[0]), max(pred_score), COCO_INSTANCE_CATEGORY_NAMES.index(pred_class[0])
         if flag == False:
             return str(pred_class[0]), max(pred_score)
 
@@ -116,14 +120,20 @@ class resnet50:
         :param text_th:
         :return:
         """
-        image = img.squeeze(0).permute(1, 2, 0).mul(255).clamp(0, 255).cpu().numpy().astype("uint8")
-        plt.imshow(image)
+        # image = img.squeeze(0).permute(1, 2, 0).mul(255).clamp(0, 255).cpu().numpy().astype("uint8")
+        img = Image.fromarray(np.uint8(img))
+        plt.imshow(img)
         plt.title(prob[0] + ':' + str(round(prob[1], 2)))
-        plt.savefig(r'/mnt/test/venv/pso/img_out/' + 'successRes' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())) + '.jpg')
+        plt.savefig(r'/mnt/test/venv/direct_disturbances/img_out/res/' + time.strftime('%Y-%m-%d %H_%M_%S', time.localtime(time.time())) + '.jpg')
         # plt.show()
         return prob
 
-    def draw_cam(self, img_path, transform=None, visual_heatmap=False, out_layer=None):
+    def get_cam(self, img_tensor, target_class):
+        output = self.model([img_tensor])
+        cam = output[0]['boxes'].detach().cpu().numpy()
+        return cam
+
+    def draw_cam(self, img_path, target_class, transform=None, visual_heatmap=False, out_layer=None):
         """
         绘制热力图
         :param model:
@@ -146,12 +156,8 @@ class resnet50:
         img_tensor = transform(img)
         img_tensor = img_tensor.cuda()
 
-        # Run the image through the model
-        output = self.model([img_tensor])
-
-        # print(output)
         # Get the class activation map
-        cam = output[0]['boxes'].detach().cpu().numpy()
+        cam = self.get_cam(img_tensor, target_class)
 
         # Resize the CAM to the original image size
         cam = cv2.resize(cam, (img.shape[1], img.shape[0]))
@@ -165,20 +171,22 @@ class resnet50:
         cam = cv2.applyColorMap(cam, cv2.COLORMAP_JET)
         # Overlay the CAM on the original image
         cam = cv2.addWeighted(img, 0.5, cam, 0.5, 0)
+        self.cam = cam
+
         # Plot the result
-        self.img_path = r'D:\\Note\\Test_Net\\venv\\direct_disturbances\\img_out\\' + time.strftime('%Y-%m-%d %H_%M_%S', time.localtime(time.time())) + '区间热图.jpg'
+        self.img_path = r'/mnt/test/venv/direct_disturbances/img_heat/res/' + time.strftime('%Y-%m-%d %H_%M_%S', time.localtime(time.time())) + '区间热图.jpg'
         plt.imshow(cam)
         plt.title("Interval heat map")
         plt.savefig(self.img_path)
-        self.cam = cam
 
-    def get_importance(self, img_path):
+
+    def get_importance(self, img_path, target_class):
         """
         读取类间激活热图，并且获取
         :param img_path:
         :return:
         """
-        self.draw_cam(img_path)
+        self.draw_cam(img_path, target_class)
         img = self.cam
         # img = cv2.resize(img, (400, 400))
         # 将RGB图像转换为灰度图像
@@ -193,10 +201,11 @@ class resnet50:
 if __name__ == '__main__':
     img = Image.open(r"mm.jpeg")
     local_net = resnet50()
+    prob = local_net.predict(img, cam=True)
     # matrix = np.asarray(img).copy()
     # img = img + np.zeros(matrix.shape)
     # print(img == matrix)
 
     # print(local_net.predict(img, flag=False))
     # print(local_net.e)
-    print(local_net.get_importance(r'dog.jpg'))
+    print(local_net.get_importance(r'dog.jpg', target_class=prob[2]))

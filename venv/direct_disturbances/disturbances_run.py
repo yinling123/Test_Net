@@ -15,7 +15,7 @@ class attack:
     def __init__(self):
         pass
 
-    def network_attack(self, box, pth):
+    def network_attack(self, local, box, pth):
         """
         传入攻击模型进行攻击的方法
         :param box: 黑盒模型
@@ -28,9 +28,9 @@ class attack:
         # 转换类型
         # data = data.astype(np.float32)
         # 生成模型对象，并且进行初始化图像判别
-        prob = box.predict(data)
-        weight = box.get_importance(pth)
-        p = disturbance(2, 2, 2, 10, 20, 200, prob[0], prob[1], box, data, weight, flag=True)
+        prob = box.predict(data, cam=True)
+        weight = local.get_importance(pth, target_class=prob[2])
+        p = disturbance(2, 2, 2, 10, 20, 100, prob[0], prob[1], local, box, data, weight, flag=True)
         return p.pso()
 
     def circular_attack(self, name, url, box):
@@ -44,7 +44,11 @@ class attack:
         success_time = 0  # 记录成功次数
         # 遍历过程出现异常记录异常的图片信息
         try:
+            i = 0
             for file_name in os.listdir(pth):
+                i += 1
+                if i < 92:
+                    continue
                 # 遍历文件夹获取文件路径
                 img_pth = ('/'.join([url, file_name]))
                 # 获取结果
@@ -86,12 +90,12 @@ class attack:
         alex_success_times = 0
 
         # 进行网络攻击
-        name = "res"
-        res_success_times, res_visit_times = self.circular_attack(name, url, res_net)
-
-        with open('record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
-            f.write('平均res_success' + str(res_success_times) + '\n')
-            f.write('平均res_visit' + str(res_visit_times) + '\n')
+        # name = "res"
+        # res_success_times, res_visit_times = self.circular_attack(name, url, res_net)
+        #
+        # with open('record.txt', 'a', encoding='utf-8') as f:  # 使用with open()新建对象f
+        #     f.write('平均res_success' + str(res_success_times) + '\n')
+        #     f.write('平均res_visit' + str(res_visit_times) + '\n')
 
         name = "alex"
         alex_success_times, alex_visit_times = self.circular_attack(name, url, alex_net)

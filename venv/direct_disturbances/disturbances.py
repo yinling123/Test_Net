@@ -9,7 +9,7 @@ class disturbance:
     """
     进行子空间采样攻击类
     """
-    def __init__(self, w, c1, c2, k, size, times, kind, prob, model, image, weight, flag):
+    def __init__(self, w, c1, c2, k, size, times, kind, prob, local, model, image, weight, flag):
         """
         进行类初始化
         :param model: 指向攻击模型
@@ -44,6 +44,7 @@ class disturbance:
         self.final_best_position = None
         self.final_best_fitness = 0
         self.success = []
+        self.local = local
 
 
     def l2(self, x):
@@ -233,7 +234,7 @@ class disturbance:
                 times += 1
 
             # 使用适应度函数最好的进行迭代攻击
-            s = self.model.predict(self.p_best_position)
+            s = self.local.predict(self.p_best_position)
             times += 1
             # 进行攻击判断
             if self.distinguish(s):

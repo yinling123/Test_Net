@@ -44,7 +44,21 @@
           </mappings>
         </serverdata>
       </paths>
+      <paths name="root@hz-t3.matpool.com:29266">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/mnt/test" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="root@hz.matpool.com:26012">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/mnt/test" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="root@hz.matpool.com:27586">
         <serverdata>
           <mappings>
             <mapping deploy="/mnt/test" local="$PROJECT_DIR$" />
@@ -55,6 +69,14 @@
         <serverdata>
           <mappings>
             <mapping deploy="/mnt/Test_Net" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="root@hz.matpool.com:29711">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/mnt/test" local="$PROJECT_DIR$" />
+            <mapping />
           </mappings>
         </serverdata>
       </paths>
